@@ -1,5 +1,5 @@
-## Welcome to option pricing project
-This is the first version for option pricing project. I will keep updating more useful tools for option trading. In thie first version, I will use the famous **Black Scholes pricing model** to price the given option. 
+# Welcome to option pricing project
+This is the option pricing project. I will keep updating more useful tools for option trading. At the beginning of the project, I will use the famous **Black Scholes pricing model** to price the given option and make comparison with option real time price.
 Here are the packages you might need for the project. If you do not have them, just pip install the package.
 ```
 from yahoo_fin import options
@@ -12,11 +12,11 @@ from yahoo_fin import stock_info
 import datetime
 
 ```
-
+## version 1.0
 ### getting stock information
 
 Before we using BS model to price the option, we need to know the price of the stock. Here is a little webscraper to get stock information from yahoo finance. 
-
+source: https://finance.yahoo.com/
 
 input: **stock ticker** 
 
@@ -153,6 +153,48 @@ else:
     print("Using Black Scholes model, the theoretical option price is $"+ str(putprice))
 
 ```
+## version 1.1
+### Delta Hedging(1.1)
+If you remember those meme stocks such as $GME and $AMC, you shall be shocked by how much the agencies who shorted on these stocks lost everyday. One main reason is these agencies are required to using delta and gamma hedging to mitigate the risk of the put option. Delta hedging requires investors to sell or buy stocks to zero the sum of the delta daily. In that case, it accelerated the short squeeze. However, for most of the option investors, delta hedging would be a good stratagy to partially mitigate options' risk by reducing the volitality given by stock price changes.
+'''
+def deltahedging(ticker,optiontype,strike):
+    ### calculate how much the option price changed
+    date = options.get_expiration_dates(ticker)
+    for dates in date:
+        print(dates)
+    selected_date = input()
+    expirationdate = datetime.datetime.strptime(selected_date,'%B %d, %Y').date()
+    date_today = datetime.date.today()
+    date_difference = float((expirationdate - date_today).days)
+    pd.set_option('display.max_columns',None)
+    chain = options.get_options_chain(ticker,selected_date)
+    option = chain[optiontype]
+    optionchain = option[option['Strike'] == strike].replace('-',0)
+    
+    change = float(optionchain['Change'])
+    previousprice = float(optionchain['Last Price']) - change
+    optionpercent = change/previousprice
+    
+    
+    
+    ### calculate how much the stock price changed
+    headers= {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36 Edg/94.0.992.38'}    
+    stockurl = f'https://finance.yahoo.com/quote/{ticker}'
+    stockinfo = requests.get(stockurl, headers=headers)
+    stocksoup = BeautifulSoup(stockinfo.text, 'html.parser')
+    stockchange = stocksoup.find('span', {'class':'Trsdu(0.3s) Fw(500) Pstart(10px) Fz(24px) C($positiveColor)'}).text
+    ### calculate how much the option delta and give the trading stratagy
+    if stockchange[0] == '+':
+        stockpercent = float(stockchange[8:-2])/100
+        optiondelta = stockpercent/optionpercent 
+        print('you need to short '+str(optiondelta * 100 * 5)+' share of stock')
+    else:
+        stockpercent = float(stockchange[8:-2])/100 *(-1)
+        optiondelta = stockpercent/optionpercent 
+        print('you need to long '+str(optiondelta * 100 * 5*(-1))+' share of stock')
+
+'''
+
 
 ### Support or Contact
 
