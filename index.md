@@ -156,7 +156,7 @@ else:
 ## version 1.1
 ### Delta Hedging(1.1)
 If you remember those meme stocks such as $GME and $AMC, you shall be shocked by how much the agencies who shorted on these stocks lost everyday. One main reason is these agencies are required to using delta and gamma hedging to mitigate the risk of the put option. Delta hedging requires investors to sell or buy stocks to zero the sum of the delta daily. In that case, it accelerated the short squeeze. However, for most of the option investors, delta hedging would be a good stratagy to partially mitigate options' risk by reducing the volitality given by stock price changes.
-'''
+```
 def deltahedging(ticker,optiontype,strike):
     ### calculate how much the option price changed
     date = options.get_expiration_dates(ticker)
@@ -170,13 +170,9 @@ def deltahedging(ticker,optiontype,strike):
     chain = options.get_options_chain(ticker,selected_date)
     option = chain[optiontype]
     optionchain = option[option['Strike'] == strike].replace('-',0)
-    
     change = float(optionchain['Change'])
     previousprice = float(optionchain['Last Price']) - change
-    optionpercent = change/previousprice
-    
-    
-    
+    optionpercent = change/previousprice 
     ### calculate how much the stock price changed
     headers= {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36 Edg/94.0.992.38'}    
     stockurl = f'https://finance.yahoo.com/quote/{ticker}'
@@ -193,7 +189,7 @@ def deltahedging(ticker,optiontype,strike):
         optiondelta = stockpercent/optionpercent 
         print('you need to long '+str(optiondelta * 100 * 5*(-1))+' share of stock')
 
-'''
+```
 
 
 ### Support or Contact
